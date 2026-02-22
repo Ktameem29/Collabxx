@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+.npm/
+
+# Environment files (never commit secrets)
+.env
+.env.production
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+
+# Uploads (user-generated content)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,53 @@
+version: '3.9'
+
+# Development — run with: docker compose -f docker-compose.dev.yml up
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"       # expose for MongoDB Compass / mongosh
+    volumes:
+      - mongo_dev_data:/data/db
+    networks:
+      - collabxx
+
+  backend:
+    build:
+      context: ./backend
+    command: npm run dev    # nodemon hot-reload
+    restart: unless-stopped
+    env_file: ./backend/.env
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/src:/app/src   # hot-reload
+      - uploads_dev:/app/uploads
+    depends_on:
+      - mongo
+    networks:
+      - collabxx
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    networks:
+      - collabxx
+
+volumes:
+  mongo_dev_data:
+  uploads_dev:
+
+networks:
+  collabxx:
+    driver: bridge
