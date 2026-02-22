@@ -20,7 +20,7 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
-    socketRef.current = io(window.location.origin, {
+    socketRef.current = io(import.meta.env.VITE_API_URL || window.location.origin, {
       auth: { token },
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 5,
