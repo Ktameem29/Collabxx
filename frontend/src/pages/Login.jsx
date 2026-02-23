@@ -34,7 +34,7 @@ export default function Login() {
   };
 
   const handleGoogleLogin = () => {
-    authAPI.googleLogin();
+    window.location.href = `${import.meta.env.VITE_API_URL || ''}/api/auth/google`;
   };
 
   return (

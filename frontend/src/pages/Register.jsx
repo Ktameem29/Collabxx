@@ -42,7 +42,7 @@ export default function Register() {
   };
 
   const handleGoogleSignup = () => {
-    authAPI.googleLogin();
+    window.location.href = `${import.meta.env.VITE_API_URL || ''}/api/auth/google`;
   };
 
   return (

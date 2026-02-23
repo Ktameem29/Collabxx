@@ -208,24 +208,30 @@ router.post('/avatar', protect, avatarUpload.single('avatar'), async (req, res) 
 
 // ─── Google OAuth ─────────────────────────────────────────────────────────────
 
+const googleEnabled = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+
 // GET /api/auth/google
-router.get(
-  '/google',
-  passport.authenticate('google', { scope: ['profile', 'email'], session: false })
-);
+router.get('/google', (req, res, next) => {
+  if (!googleEnabled) {
+    return res.redirect(`${process.env.CLIENT_URL}/login?error=google_not_configured`);
+  }
+  passport.authenticate('google', { scope: ['profile', 'email'], session: false })(req, res, next);
+});
 
 // GET /api/auth/google/callback
-router.get(
-  '/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: `${process.env.CLIENT_URL}/login?error=oauth` }),
-  (req, res) => {
+router.get('/google/callback', (req, res, next) => {
+  if (!googleEnabled) {
+    return res.redirect(`${process.env.CLIENT_URL}/login?error=google_not_configured`);
+  }
+  passport.authenticate('google', { session: false, failureRedirect: `${process.env.CLIENT_URL}/login?error=oauth` })(req, res, (err) => {
+    if (err) return next(err);
     const user = req.user;
     if (!user.isActive && user.waitlistStatus === 'pending') {
       return res.redirect(`${process.env.CLIENT_URL}/waitlisted`);
     }
     const token = generateToken(user._id);
     res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
-  }
-);
+  });
+});
 
 module.exports = router;

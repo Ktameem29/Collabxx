@@ -4,6 +4,8 @@ const User = require('../models/User');
 const University = require('../models/University');
 const Waitlist = require('../models/Waitlist');
 
+// Skip Google OAuth setup if credentials are not configured
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 passport.use(
   new GoogleStrategy(
     {
@@ -75,5 +77,6 @@ passport.use(
     }
   )
 );
+} // end if GOOGLE_CLIENT_ID
 
 module.exports = passport;
