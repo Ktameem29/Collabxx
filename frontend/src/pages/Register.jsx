@@ -145,7 +145,7 @@ export default function Register() {
             {universities.length > 0 && (
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-1.5">
-                  University <span className="text-gray-600 font-normal">(optional)</span>
+                  Institution <span className="text-gray-600 font-normal">(optional)</span>
                 </label>
                 <div className="relative">
                   <Building2 size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
@@ -154,12 +154,27 @@ export default function Register() {
                     onChange={(e) => setForm((p) => ({ ...p, universityId: e.target.value }))}
                     className="input pl-10 appearance-none"
                   >
-                    <option value="">Select your university</option>
-                    {universities.map((u) => (
-                      <option key={u._id} value={u._id}>
-                        {u.name} {u.currentStudentCount >= u.maxStudents ? '(Full — waitlist)' : `(${u.maxStudents - u.currentStudentCount} spots)`}
-                      </option>
-                    ))}
+                    <option value="">Select your institution</option>
+                    {/* Universities & Colleges */}
+                    {universities.filter((u) => u.type !== 'school').length > 0 && (
+                      <optgroup label="🎓 Universities & Colleges">
+                        {universities.filter((u) => u.type !== 'school').map((u) => (
+                          <option key={u._id} value={u._id}>
+                            {u.name} {u.currentStudentCount >= u.maxStudents ? '(Full — waitlist)' : `(${u.maxStudents - u.currentStudentCount} spots)`}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {/* Schools */}
+                    {universities.filter((u) => u.type === 'school').length > 0 && (
+                      <optgroup label="🏫 Schools">
+                        {universities.filter((u) => u.type === 'school').map((u) => (
+                          <option key={u._id} value={u._id}>
+                            {u.name} {u.currentStudentCount >= u.maxStudents ? '(Full — waitlist)' : `(${u.maxStudents - u.currentStudentCount} spots)`}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
                   </select>
                 </div>
               </div>

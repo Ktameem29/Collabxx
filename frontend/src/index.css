@@ -2,6 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── CSS Theme Variables ─────────────────────────────────────────────────────
+   :root = dark (default, avoids FOUC on first paint)
+   html.light overrides for light mode
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  --navy-950: #07090f;
+  --navy-900: #0B0F1A;
+  --navy-800: #0f1422;
+  --navy-700: #121826;
+  --navy-600: #1a2236;
+  --navy-500: #1F2937;
+  --text-primary: #E5E7EB;
+}
+
+html.light {
+  --navy-950: #eef2ff;
+  --navy-900: #f8fafc;
+  --navy-800: #f1f5f9;
+  --navy-700: #ffffff;
+  --navy-600: #f8fafc;
+  --navy-500: #e2e8f0;
+  --text-primary: #0f172a;
+}
+
 @layer base {
   * {
     box-sizing: border-box;
@@ -14,9 +38,29 @@
   }
 
   body {
-    @apply bg-navy-900 text-gray-200 font-sans antialiased;
+    background-color: var(--navy-900);
+    color: var(--text-primary);
+    font-family: Inter, system-ui, sans-serif;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+
+  /* ── Light mode text overrides ─────────────────────────────────────────── */
+  html.light .text-gray-100,
+  html.light .text-gray-200 { color: #0f172a; }
+
+  html.light .text-gray-300 { color: #334155; }
+  html.light .text-gray-400 { color: #64748b; }
+  html.light .text-gray-500 { color: #94a3b8; }
+  html.light .text-gray-600 { color: #94a3b8; }
+
+  html.light input::placeholder,
+  html.light textarea::placeholder { color: #94a3b8; }
+
+  /* Light mode scrollbar */
+  html.light ::-webkit-scrollbar-track { background: var(--navy-800); }
+  html.light ::-webkit-scrollbar-thumb { background: #cbd5e1; }
 
   ::-webkit-scrollbar {
     width: 6px;
@@ -24,11 +68,12 @@
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-navy-800;
+    background-color: var(--navy-800);
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-navy-500 rounded-full;
+    background-color: var(--navy-500);
+    border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
@@ -46,6 +91,11 @@
     @apply shadow-glass;
   }
 
+  html.light .glass {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(226, 232, 240, 0.8);
+  }
+
   .glass-hover {
     @apply glass transition-all duration-300;
   }
@@ -55,6 +105,10 @@
     border-color: rgba(59, 130, 246, 0.25);
     @apply shadow-glow;
     transform: translateY(-2px);
+  }
+
+  html.light .glass-hover:hover {
+    background: rgba(248, 250, 252, 0.95);
   }
 
   /* Gradient text */
@@ -121,6 +175,11 @@
            transition-all duration-200 text-sm;
   }
 
+  html.light .input {
+    color: #0f172a;
+    border-color: #e2e8f0;
+  }
+
   /* Card */
   .card {
     @apply bg-navy-700 border border-navy-500 rounded-2xl p-6;
@@ -135,6 +194,10 @@
   .sidebar-link {
     @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-gray-200
            hover:bg-navy-600 transition-all duration-200 text-sm font-medium cursor-pointer;
+  }
+
+  html.light .sidebar-link:hover {
+    color: #0f172a;
   }
 
   .sidebar-link.active {
@@ -170,6 +233,12 @@
 
   .status-archived {
     @apply badge bg-gray-500/10 text-gray-400 border border-gray-500/20;
+  }
+
+  /* Select in light mode */
+  html.light select option {
+    background-color: #ffffff;
+    color: #0f172a;
   }
 }
 
