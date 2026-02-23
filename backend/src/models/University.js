@@ -5,6 +5,7 @@ const universitySchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     logo: { type: String, default: '' },
     domain: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    type: { type: String, enum: ['university', 'college', 'school'], default: 'university' },
     maxStudents: { type: Number, required: true, default: 100 },
     currentStudentCount: { type: Number, default: 0 },
     description: { type: String, default: '' },
