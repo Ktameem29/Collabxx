@@ -1,10 +1,11 @@
-import { Menu, Bell } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import Avatar from '../ui/Avatar';
 import ThemeToggle from '../ui/ThemeToggle';
+import NotificationPanel from './NotificationPanel';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Navbar({ onMenuClick }) {
-  const { user, pendingCount } = useAuth();
+  const { user } = useAuth();
 
   return (
     <header className="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-navy-700/80 backdrop-blur-md border-b border-navy-500 z-30 flex items-center justify-between px-4 lg:px-6">
@@ -25,14 +26,7 @@ export default function Navbar({ onMenuClick }) {
       {/* Right */}
       <div className="flex items-center gap-3">
         <ThemeToggle />
-        <button className="relative p-2.5 rounded-xl text-gray-400 hover:text-gray-200 hover:bg-navy-600 transition-colors" title={pendingCount > 0 ? `${pendingCount} pending join request${pendingCount > 1 ? 's' : ''}` : 'Notifications'}>
-          <Bell size={18} />
-          {pendingCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-navy-700 px-1 animate-pulse">
-              {pendingCount > 99 ? '99+' : pendingCount}
-            </span>
-          )}
-        </button>
+        <NotificationPanel />
         <Avatar user={user} size="sm" className="cursor-pointer" />
       </div>
     </header>
