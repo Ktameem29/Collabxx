@@ -51,11 +51,6 @@ export default function TaskModal({ isOpen, onClose, task, project, onSaved, ini
           ...form, assignedTo: form.assignedTo || null, dueDate: form.dueDate || null,
         });
         toast.success('Task updated');
-        if (data.newBadges?.length > 0) {
-          data.newBadges.forEach((badge) => {
-            toast.success(`${badge.icon || '🏆'} Badge Unlocked: ${badge.name}!`, { duration: 5000 });
-          });
-        }
         onSaved(data, 'update');
       } else {
         const { data } = await tasksAPI.create({

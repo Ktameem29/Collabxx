@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 
 const BADGE_DEFINITIONS = [
   { id: 'first_task', name: 'First Blood', icon: '⚔️', description: 'Complete your first task' },
@@ -48,6 +49,13 @@ const checkAndAwardBadges = async (userId, stats) => {
 
   if (newBadges.length > 0) {
     await User.findByIdAndUpdate(userId, { $push: { badges: { $each: newBadges } } });
+    await Notification.insertMany(
+      newBadges.map((b) => ({
+        user: userId,
+        type: 'badge_unlock',
+        data: BADGE_DEFINITIONS.find((d) => d.id === b.id),
+      }))
+    );
   }
 
   // Return enriched badges with full definition metadata

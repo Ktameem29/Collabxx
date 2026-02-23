@@ -142,6 +142,14 @@ export const hackathonsAPI = {
   getLeaderboard: (id) => api.get(`/hackathons/${id}/leaderboard`),
 };
 
+// Notifications
+export const notificationsAPI = {
+  getAll: () => api.get('/notifications'),
+  getUnreadCount: () => api.get('/notifications/unread-count'),
+  markAllRead: () => api.put('/notifications/read-all'),
+  markRead: (id) => api.put(`/notifications/${id}/read`),
+};
+
 // Merit
 export const meritAPI = {
   getLeaderboard: (params) => api.get('/merit/leaderboard', { params }),

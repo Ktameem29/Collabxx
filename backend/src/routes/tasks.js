@@ -94,6 +94,13 @@ router.put('/:id', protect, async (req, res) => {
     if (status === 'done' && previousStatus !== 'done' && updated.assignedTo) {
       const result = await recalculateMeritForUser(updated.assignedTo._id).catch(() => null);
       newBadges = result?.newBadges || [];
+      if (newBadges.length > 0) {
+        const io = req.app.get('io');
+        const uid = updated.assignedTo._id.toString();
+        newBadges.forEach((badge) => {
+          io.to(`user:${uid}`).emit('notification:new', { type: 'badge_unlock', data: badge });
+        });
+      }
     }
 
     res.json({ ...updated.toObject(), newBadges });

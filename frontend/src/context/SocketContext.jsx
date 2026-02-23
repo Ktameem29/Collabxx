@@ -1,11 +1,12 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import toast from 'react-hot-toast';
 
 const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
-  const { token, user } = useAuth();
+  const { token, user, setNotifCount } = useAuth();
   const socketRef = useRef(null);
   const [isConnected, setIsConnected] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
@@ -39,6 +40,13 @@ export const SocketProvider = ({ children }) => {
     s.on('users:online', (users) => setOnlineUsers(users));
     s.on('user:online', ({ userId }) => setOnlineUsers((prev) => [...new Set([...prev, userId])]));
     s.on('user:offline', ({ userId }) => setOnlineUsers((prev) => prev.filter((id) => id !== userId)));
+
+    s.on('notification:new', ({ type, data }) => {
+      setNotifCount((c) => c + 1);
+      if (type === 'badge_unlock' && data) {
+        toast.success(`${data.icon || '🏆'} Badge Unlocked: ${data.name}!`, { duration: 5000 });
+      }
+    });
 
     return () => {
       s.disconnect();

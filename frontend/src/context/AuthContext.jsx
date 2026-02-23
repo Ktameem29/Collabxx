@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { authAPI } from '../api';
+import { authAPI, notificationsAPI } from '../api';
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext(null);
@@ -12,6 +12,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
+  const [notifCount, setNotifCount] = useState(0);
   const [isWaitlisted, setIsWaitlisted] = useState(false);
 
   // Verify token on mount
@@ -23,6 +24,7 @@ export const AuthProvider = ({ children }) => {
         setUser(data);
         localStorage.setItem('user', JSON.stringify(data));
         if (data.waitlistStatus === 'pending') setIsWaitlisted(true);
+        notificationsAPI.getUnreadCount().then(({ data: n }) => setNotifCount(n.count)).catch(() => {});
       } catch {
         logout();
       } finally {
@@ -70,6 +72,7 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUser(null);
     setPendingCount(0);
+    setNotifCount(0);
     setIsWaitlisted(false);
   }, []);
 
@@ -93,6 +96,7 @@ export const AuthProvider = ({ children }) => {
       user, token, loading,
       login, register, logout, loginWithToken, updateUser, refreshUser,
       pendingCount, setPendingCount,
+      notifCount, setNotifCount,
       isWaitlisted, setIsWaitlisted,
     }}>
       {children}

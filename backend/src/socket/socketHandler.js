@@ -23,6 +23,7 @@ const socketHandler = (io) => {
 
   io.on('connection', (socket) => {
     const userId = socket.user._id.toString();
+    socket.join(`user:${userId}`); // personal room for targeted notifications
     onlineUsers.set(userId, socket.id);
 
     // Broadcast online status
