@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   LayoutDashboard, FolderKanban, User, LogOut,
-  ShieldCheck, Zap, X, ChevronRight, Trophy, Medal, Gavel,
+  ShieldCheck, Zap, X, ChevronRight, Trophy, Medal, Gavel, MapPin,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
@@ -13,6 +13,7 @@ const navLinks = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/hackathons', icon: Trophy, label: 'Hackathons' },
   { to: '/leaderboard', icon: Medal, label: 'Leaderboard' },
+  { to: '/institutions', icon: MapPin, label: 'Institutions Map' },
   { to: '/profile', icon: User, label: 'Profile' },
 ];
 

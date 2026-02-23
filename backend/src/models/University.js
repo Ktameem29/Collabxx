@@ -10,6 +10,8 @@ const universitySchema = new mongoose.Schema(
     currentStudentCount: { type: Number, default: 0 },
     description: { type: String, default: '' },
     location: { type: String, default: '' },
+    lat: { type: Number, default: null },
+    lng: { type: Number, default: null },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
