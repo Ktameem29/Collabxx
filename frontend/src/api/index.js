@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-// Use relative /api path so Vercel proxies to Railway (avoids CORS)
-// VITE_API_URL is kept for Socket.io direct connection only
+// If VITE_API_URL is set (Netlify), use direct Railway URL; otherwise use relative /api (Vercel proxy)
+const BASE_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api';
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 });
 
