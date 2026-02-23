@@ -17,9 +17,22 @@ const server = http.createServer(app);
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 const isProd = process.env.NODE_ENV === 'production';
 
+const allowedOrigin = (origin, callback) => {
+  if (!origin) return callback(null, true); // allow non-browser requests
+  if (
+    origin === CLIENT_URL ||
+    origin === 'http://localhost:5173' ||
+    origin === 'http://localhost:3000' ||
+    /\.vercel\.app$/.test(origin)
+  ) {
+    return callback(null, true);
+  }
+  callback(new Error('CORS: origin not allowed'));
+};
+
 // Socket.io
 const io = new Server(server, {
-  cors: { origin: CLIENT_URL, methods: ['GET', 'POST'], credentials: true },
+  cors: { origin: allowedOrigin, methods: ['GET', 'POST'], credentials: true },
 });
 
 // Make io accessible in routes via req.app.get('io')
@@ -60,7 +73,7 @@ const authLimiter = rateLimit({
 app.use('/api/', generalLimiter);
 
 // Body parsing
-app.use(cors({ origin: CLIENT_URL, credentials: true }));
+app.use(cors({ origin: allowedOrigin, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -81,6 +94,7 @@ app.use('/api/universities', require('./routes/universities'));
 app.use('/api/waitlist', require('./routes/waitlist'));
 app.use('/api/hackathons', require('./routes/hackathons'));
 app.use('/api/merit', require('./routes/merit'));
+app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/seed', require('./routes/seed'));
 
 // Health check

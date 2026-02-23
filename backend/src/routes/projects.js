@@ -125,6 +125,13 @@ router.put('/:id', protect, async (req, res) => {
     if (status === 'completed' && project.status !== 'completed') {
       const result = await recalculateMeritForUser(req.user._id).catch(() => null);
       newBadges = result?.newBadges || [];
+      if (newBadges.length > 0) {
+        const io = req.app.get('io');
+        const uid = req.user._id.toString();
+        newBadges.forEach((badge) => {
+          io.to(`user:${uid}`).emit('notification:new', { type: 'badge_unlock', data: badge });
+        });
+      }
       recalculateMeritForAllMembers(req.params.id).catch(() => {}); // fire-and-forget for other members
     }
 
