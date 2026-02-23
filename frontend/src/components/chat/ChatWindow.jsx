@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Paperclip, Smile } from 'lucide-react';
-import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
+import { format, isToday, isYesterday } from 'date-fns';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import { messagesAPI } from '../../api';
@@ -62,7 +62,14 @@ export default function ChatWindow({ project }) {
     load();
     joinProject(project._id);
 
-    return () => leaveProject(project._id);
+    // Re-join room on socket reconnect (e.g. after brief disconnect)
+    const handleReconnect = () => joinProject(project._id);
+    on('connect', handleReconnect);
+
+    return () => {
+      leaveProject(project._id);
+      off('connect', handleReconnect);
+    };
   }, [project._id]); // eslint-disable-line
 
   // Socket listeners

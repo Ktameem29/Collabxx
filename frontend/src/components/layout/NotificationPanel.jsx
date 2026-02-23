@@ -26,7 +26,7 @@ export default function NotificationPanel() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Fetch data when panel opens
+  // Fetch data when panel opens, then mark badge notifs as read if on badges tab
   useEffect(() => {
     if (!open) return;
     setLoading(true);
@@ -50,21 +50,33 @@ export default function NotificationPanel() {
         setBadgeNotifs(notifRes.data);
         const unread = notifRes.data.filter((n) => !n.read).length;
         setNotifCount(unread);
+
+        // Mark as read immediately if badges tab is active and there are unread items
+        if (tab === 'badges' && unread > 0) {
+          notificationsAPI.markAllRead()
+            .then(() => {
+              setBadgeNotifs(notifRes.data.map((n) => ({ ...n, read: true })));
+              setNotifCount(0);
+            })
+            .catch(() => {});
+        }
       })
       .catch(() => toast.error('Failed to load notifications'))
       .finally(() => setLoading(false));
   }, [open]); // eslint-disable-line
 
-  // Mark all badge notifications as read when badges tab is viewed
+  // Mark all as read when user switches to badges tab (after initial load)
   useEffect(() => {
-    if (!open || tab !== 'badges' || notifCount === 0) return;
+    if (!open || tab !== 'badges') return;
+    const unread = badgeNotifs.filter((n) => !n.read).length;
+    if (unread === 0) return;
     notificationsAPI.markAllRead()
       .then(() => {
         setBadgeNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
         setNotifCount(0);
       })
       .catch(() => {});
-  }, [open, tab]); // eslint-disable-line
+  }, [tab]); // eslint-disable-line
 
   const handleAccept = async (projectId, userId) => {
     setActing(userId);
