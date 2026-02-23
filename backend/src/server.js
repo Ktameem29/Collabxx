@@ -81,6 +81,7 @@ app.use('/api/universities', require('./routes/universities'));
 app.use('/api/waitlist', require('./routes/waitlist'));
 app.use('/api/hackathons', require('./routes/hackathons'));
 app.use('/api/merit', require('./routes/merit'));
+app.use('/api/seed', require('./routes/seed'));
 
 // Health check
 app.get('/api/health', (req, res) => {
