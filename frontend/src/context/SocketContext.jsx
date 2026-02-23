@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
-  const { token, user, setNotifCount } = useAuth();
+  const { token, setNotifCount, refreshUser } = useAuth();
   const socketRef = useRef(null);
   const [isConnected, setIsConnected] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
@@ -45,6 +45,8 @@ export const SocketProvider = ({ children }) => {
       setNotifCount((c) => c + 1);
       if (type === 'badge_unlock' && data) {
         toast.success(`${data.icon || '🏆'} Badge Unlocked: ${data.name}!`, { duration: 5000 });
+        // Refresh user so Profile/Dashboard badge displays update immediately
+        refreshUser();
       }
     });
 
@@ -52,23 +54,22 @@ export const SocketProvider = ({ children }) => {
       s.disconnect();
       socketRef.current = null;
     };
-  }, [token]);
+  }, [token]); // eslint-disable-line
 
-  const joinProject = (projectId) => socketRef.current?.emit('project:join', projectId);
-  const leaveProject = (projectId) => socketRef.current?.emit('project:leave', projectId);
+  const joinProject   = useCallback((id) => socketRef.current?.emit('project:join', id), []);
+  const leaveProject  = useCallback((id) => socketRef.current?.emit('project:leave', id), []);
+  const joinHackathon = useCallback((id) => socketRef.current?.emit('hackathon:join', id), []);
+  const leaveHackathon= useCallback((id) => socketRef.current?.emit('hackathon:leave', id), []);
 
-  const joinHackathon = (hackathonId) => socketRef.current?.emit('hackathon:join', hackathonId);
-  const leaveHackathon = (hackathonId) => socketRef.current?.emit('hackathon:leave', hackathonId);
-
-  const sendMessage = (projectId, content, type = 'text', fileUrl = null, fileName = null) => {
+  const sendMessage = useCallback((projectId, content, type = 'text', fileUrl = null, fileName = null) => {
     socketRef.current?.emit('message:send', { projectId, content, type, fileUrl, fileName });
-  };
+  }, []);
 
-  const startTyping = (projectId) => socketRef.current?.emit('typing:start', { projectId });
-  const stopTyping = (projectId) => socketRef.current?.emit('typing:stop', { projectId });
+  const startTyping = useCallback((projectId) => socketRef.current?.emit('typing:start', { projectId }), []);
+  const stopTyping  = useCallback((projectId) => socketRef.current?.emit('typing:stop', { projectId }), []);
 
-  const on = (event, handler) => socketRef.current?.on(event, handler);
-  const off = (event, handler) => socketRef.current?.off(event, handler);
+  const on  = useCallback((event, handler) => socketRef.current?.on(event, handler), []);
+  const off = useCallback((event, handler) => socketRef.current?.off(event, handler), []);
 
   return (
     <SocketContext.Provider value={{
