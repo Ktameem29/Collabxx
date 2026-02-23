@@ -5,6 +5,7 @@ const Task = require('../models/Task');
 const Message = require('../models/Message');
 const File = require('../models/File');
 const { protect } = require('../middleware/auth');
+const { recalculateMeritForAllMembers } = require('../services/meritService');
 
 // Helper: check if user is a member
 const isMember = (project, userId) =>
@@ -118,6 +119,11 @@ router.put('/:id', protect, async (req, res) => {
     const updated = await Project.findByIdAndUpdate(req.params.id, updates, { new: true })
       .populate('owner', 'name avatar')
       .populate('members.user', 'name avatar');
+
+    // Trigger merit recalculation when project is marked completed
+    if (status === 'completed' && project.status !== 'completed') {
+      recalculateMeritForAllMembers(req.params.id).catch(() => {});
+    }
 
     res.json(updated);
   } catch (err) {

@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   LayoutDashboard, FolderKanban, User, LogOut,
-  ShieldCheck, Zap, X, ChevronRight,
+  ShieldCheck, Zap, X, ChevronRight, Trophy, Medal, Gavel,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
@@ -11,6 +11,8 @@ import toast from 'react-hot-toast';
 
 const navLinks = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/hackathons', icon: Trophy, label: 'Hackathons' },
+  { to: '/leaderboard', icon: Medal, label: 'Leaderboard' },
   { to: '/profile', icon: User, label: 'Profile' },
 ];
 
@@ -72,6 +74,22 @@ export default function Sidebar({ onClose }) {
           </NavLink>
         ))}
 
+        {(user?.role === 'judge' || user?.role === 'admin') && (
+          <NavLink
+            to="/judge"
+            onClick={onClose}
+            className={({ isActive }) => `sidebar-link group${isActive ? ' active' : ''}`}
+          >
+            {({ isActive }) => (
+              <>
+                <Gavel size={18} className={isActive ? 'text-blue-400' : ''} />
+                <span className="flex-1">Judge Panel</span>
+                {isActive && <ChevronRight size={14} className="text-blue-400" />}
+              </>
+            )}
+          </NavLink>
+        )}
+
         {user?.role === 'admin' && (
           <NavLink
             to="/admin"
@@ -102,7 +120,7 @@ export default function Sidebar({ onClose }) {
           <Avatar user={user} size="sm" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-200 truncate">{user?.name}</p>
-            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+            <p className="text-xs text-gray-500 truncate capitalize">{user?.role}</p>
           </div>
         </div>
 

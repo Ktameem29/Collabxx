@@ -7,6 +7,7 @@ const path = require('path');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const passport = require('./config/passport');
 const connectDB = require('./config/db');
 const socketHandler = require('./socket/socketHandler');
 
@@ -20,6 +21,9 @@ const isProd = process.env.NODE_ENV === 'production';
 const io = new Server(server, {
   cors: { origin: CLIENT_URL, methods: ['GET', 'POST'], credentials: true },
 });
+
+// Make io accessible in routes via req.app.get('io')
+app.set('io', io);
 
 // Connect DB
 connectDB();
@@ -60,6 +64,9 @@ app.use(cors({ origin: CLIENT_URL, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Passport (for Google OAuth)
+app.use(passport.initialize());
+
 // Static uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
@@ -70,6 +77,10 @@ app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/messages', require('./routes/messages'));
 app.use('/api/files', require('./routes/files'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/universities', require('./routes/universities'));
+app.use('/api/waitlist', require('./routes/waitlist'));
+app.use('/api/hackathons', require('./routes/hackathons'));
+app.use('/api/merit', require('./routes/merit'));
 
 // Health check
 app.get('/api/health', (req, res) => {

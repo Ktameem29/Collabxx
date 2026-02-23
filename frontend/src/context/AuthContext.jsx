@@ -11,7 +11,8 @@ export const AuthProvider = ({ children }) => {
   });
   const [token, setToken] = useState(() => localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(true);
-  const [pendingCount, setPendingCount] = useState(0); // join request notification badge
+  const [pendingCount, setPendingCount] = useState(0);
+  const [isWaitlisted, setIsWaitlisted] = useState(false);
 
   // Verify token on mount
   useEffect(() => {
@@ -21,6 +22,7 @@ export const AuthProvider = ({ children }) => {
         const { data } = await authAPI.getMe();
         setUser(data);
         localStorage.setItem('user', JSON.stringify(data));
+        if (data.waitlistStatus === 'pending') setIsWaitlisted(true);
       } catch {
         logout();
       } finally {
@@ -36,16 +38,30 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(data.user));
     setToken(data.token);
     setUser(data.user);
+    setIsWaitlisted(false);
     return data;
   }, []);
 
-  const register = useCallback(async (name, email, password) => {
-    const { data } = await authAPI.register({ name, email, password });
+  const register = useCallback(async (name, email, password, universityId) => {
+    const { data } = await authAPI.register({ name, email, password, universityId });
+    if (data.waitlisted) {
+      setIsWaitlisted(true);
+      return { waitlisted: true, message: data.message };
+    }
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
     setToken(data.token);
     setUser(data.user);
     return data;
+  }, []);
+
+  // Called from AuthCallback page after Google OAuth redirect
+  const loginWithToken = useCallback((token, userData) => {
+    localStorage.setItem('token', token);
+    if (userData) localStorage.setItem('user', JSON.stringify(userData));
+    setToken(token);
+    setUser(userData || null);
+    setIsWaitlisted(false);
   }, []);
 
   const logout = useCallback(() => {
@@ -54,6 +70,7 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUser(null);
     setPendingCount(0);
+    setIsWaitlisted(false);
   }, []);
 
   const updateUser = useCallback((updatedUser) => {
@@ -74,8 +91,9 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{
       user, token, loading,
-      login, register, logout, updateUser, refreshUser,
+      login, register, logout, loginWithToken, updateUser, refreshUser,
       pendingCount, setPendingCount,
+      isWaitlisted, setIsWaitlisted,
     }}>
       {children}
     </AuthContext.Provider>

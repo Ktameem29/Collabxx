@@ -3,6 +3,7 @@ const router = express.Router();
 const Task = require('../models/Task');
 const Project = require('../models/Project');
 const { protect } = require('../middleware/auth');
+const { recalculateMeritForUser } = require('../services/meritService');
 
 const isMember = (project, userId) =>
   project.members.some((m) => m.user.toString() === userId.toString()) ||
@@ -73,6 +74,7 @@ router.put('/:id', protect, async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
 
+    const previousStatus = task.status;
     const { title, description, status, priority, assignedTo, dueDate, order } = req.body;
     const updates = {};
     if (title !== undefined) updates.title = title;
@@ -86,6 +88,11 @@ router.put('/:id', protect, async (req, res) => {
     const updated = await Task.findByIdAndUpdate(req.params.id, updates, { new: true })
       .populate('assignedTo', 'name avatar')
       .populate('createdBy', 'name avatar');
+
+    // Trigger merit recalculation when task moves to 'done'
+    if (status === 'done' && previousStatus !== 'done' && updated.assignedTo) {
+      recalculateMeritForUser(updated.assignedTo._id).catch(() => {});
+    }
 
     res.json(updated);
   } catch (err) {
