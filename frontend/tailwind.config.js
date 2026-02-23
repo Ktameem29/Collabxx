@@ -6,12 +6,12 @@ export default {
     extend: {
       colors: {
         navy: {
-          950: 'var(--navy-950)',
-          900: 'var(--navy-900)',
-          800: 'var(--navy-800)',
-          700: 'var(--navy-700)',
-          600: 'var(--navy-600)',
-          500: 'var(--navy-500)',
+          950: 'rgb(var(--navy-950) / <alpha-value>)',
+          900: 'rgb(var(--navy-900) / <alpha-value>)',
+          800: 'rgb(var(--navy-800) / <alpha-value>)',
+          700: 'rgb(var(--navy-700) / <alpha-value>)',
+          600: 'rgb(var(--navy-600) / <alpha-value>)',
+          500: 'rgb(var(--navy-500) / <alpha-value>)',
         },
         blue: {
           400: '#60A5FA',
