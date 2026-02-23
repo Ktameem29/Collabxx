@@ -30,8 +30,8 @@ const logoUpload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-// GET /api/universities — list active universities
-router.get('/', protect, async (req, res) => {
+// GET /api/universities — list active universities (public — needed for Register page)
+router.get('/', async (req, res) => {
   try {
     const universities = await University.find({ isActive: true }).sort('name');
     res.json(universities);
