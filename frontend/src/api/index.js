@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+// Use relative /api path so Vercel proxies to Railway (avoids CORS)
+// VITE_API_URL is kept for Socket.io direct connection only
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL || ''}/api`,
+  baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -147,6 +149,7 @@ export const meritAPI = {
   getMe: () => api.get('/merit/me'),
   recalculate: (userId) => api.post(`/merit/recalculate/${userId}`),
   recalculateAll: () => api.post('/merit/recalculate/all'),
+  getBadgeDefinitions: () => api.get('/merit/badges'),
 };
 
 export default api;

@@ -4,6 +4,12 @@ const User = require('../models/User');
 const { protect } = require('../middleware/auth');
 const { isAdmin } = require('../middleware/roles');
 const { recalculateMeritForUser } = require('../services/meritService');
+const { BADGE_DEFINITIONS } = require('../services/badgeService');
+
+// GET /api/merit/badges — returns all badge definitions
+router.get('/badges', protect, (req, res) => {
+  res.json(BADGE_DEFINITIONS);
+});
 
 // GET /api/merit/leaderboard — global
 router.get('/leaderboard', protect, async (req, res) => {

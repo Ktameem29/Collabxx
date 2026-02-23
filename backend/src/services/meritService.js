@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Project = require('../models/Project');
 const Task = require('../models/Task');
 const HackathonTeam = require('../models/HackathonTeam');
+const { checkAndAwardBadges } = require('./badgeService');
 
 /**
  * Merit score formula:
@@ -17,6 +18,11 @@ const recalculateMeritForUser = async (userId) => {
   // Count completed projects where user is owner or member
   const projectCompletions = await Project.countDocuments({
     status: 'completed',
+    $or: [{ owner: userId }, { 'members.user': userId }],
+  });
+
+  // Count all projects (any status) where user is owner or member (for team_player badge)
+  const projectParticipations = await Project.countDocuments({
     $or: [{ owner: userId }, { 'members.user': userId }],
   });
 
@@ -61,7 +67,9 @@ const recalculateMeritForUser = async (userId) => {
 
   await User.findByIdAndUpdate(userId, { meritScore, meritBreakdown });
 
-  return { meritScore, meritBreakdown };
+  const newBadges = await checkAndAwardBadges(userId, { meritScore, meritBreakdown, projectParticipations });
+
+  return { meritScore, meritBreakdown, newBadges };
 };
 
 const recalculateMeritForAllMembers = async (projectId) => {

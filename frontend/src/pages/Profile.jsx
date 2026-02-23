@@ -1,14 +1,16 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, BookOpen, Edit2, Save, X, Plus, Camera, Lock, Eye, EyeOff } from 'lucide-react';
-import { authAPI } from '../api';
+import { User, Mail, BookOpen, Edit2, Save, X, Plus, Camera, Lock, Eye, EyeOff, Award } from 'lucide-react';
+import { authAPI, meritAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
 import Avatar from '../components/ui/Avatar';
+import BadgeGrid from '../components/badges/BadgeGrid';
 import toast from 'react-hot-toast';
 
 export default function Profile() {
   const { user, updateUser, refreshUser } = useAuth();
   const [editing, setEditing] = useState(false);
+  const [badgeDefinitions, setBadgeDefinitions] = useState([]);
   const [form, setForm] = useState({ name: user?.name || '', bio: user?.bio || '', skills: user?.skills || [] });
   const [skillInput, setSkillInput] = useState('');
   const [saving, setSaving] = useState(false);
@@ -17,6 +19,10 @@ export default function Profile() {
   const [showPw, setShowPw] = useState(false);
   const [savingPw, setSavingPw] = useState(false);
   const avatarRef = useRef();
+
+  useEffect(() => {
+    meritAPI.getBadgeDefinitions().then(({ data }) => setBadgeDefinitions(data)).catch(() => {});
+  }, []);
 
   const startEdit = () => {
     setForm({ name: user?.name || '', bio: user?.bio || '', skills: [...(user?.skills || [])] });
@@ -234,6 +240,23 @@ export default function Profile() {
             {savingPw ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Update Password'}
           </button>
         </form>
+      </div>
+
+      {/* Badges & Achievements */}
+      <div className="card">
+        <h3 className="font-semibold text-gray-200 mb-4 flex items-center gap-2">
+          <Award size={15} /> Badges &amp; Achievements
+        </h3>
+        {badgeDefinitions.length === 0 ? (
+          <p className="text-sm text-gray-600 italic">Loading badges...</p>
+        ) : (
+          <>
+            <p className="text-xs text-gray-500 mb-4">
+              {user?.badges?.length || 0} / {badgeDefinitions.length} earned
+            </p>
+            <BadgeGrid definitions={badgeDefinitions} earnedBadges={user?.badges || []} />
+          </>
+        )}
       </div>
 
       {/* Account Info */}

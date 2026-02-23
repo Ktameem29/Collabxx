@@ -5,7 +5,7 @@ const Task = require('../models/Task');
 const Message = require('../models/Message');
 const File = require('../models/File');
 const { protect } = require('../middleware/auth');
-const { recalculateMeritForAllMembers } = require('../services/meritService');
+const { recalculateMeritForAllMembers, recalculateMeritForUser } = require('../services/meritService');
 
 // Helper: check if user is a member
 const isMember = (project, userId) =>
@@ -121,11 +121,14 @@ router.put('/:id', protect, async (req, res) => {
       .populate('members.user', 'name avatar');
 
     // Trigger merit recalculation when project is marked completed
+    let newBadges = [];
     if (status === 'completed' && project.status !== 'completed') {
-      recalculateMeritForAllMembers(req.params.id).catch(() => {});
+      const result = await recalculateMeritForUser(req.user._id).catch(() => null);
+      newBadges = result?.newBadges || [];
+      recalculateMeritForAllMembers(req.params.id).catch(() => {}); // fire-and-forget for other members
     }
 
-    res.json(updated);
+    res.json({ ...updated.toObject(), newBadges });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

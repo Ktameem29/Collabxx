@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Search, FolderOpen, TrendingUp, Users, Zap } from 'lucide-react';
-import { projectsAPI } from '../api';
+import { projectsAPI, meritAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
 import ProjectCard from '../components/projects/ProjectCard';
 import CreateProjectModal from '../components/projects/CreateProjectModal';
@@ -34,6 +34,7 @@ export default function Dashboard() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('my'); // 'my' | 'browse'
   const [createOpen, setCreateOpen] = useState(false);
+  const [badgeDefs, setBadgeDefs] = useState([]);
 
   const fetchProjects = useCallback(async () => {
     setLoading(true);
@@ -58,6 +59,12 @@ export default function Dashboard() {
     const timeout = setTimeout(fetchProjects, 300);
     return () => clearTimeout(timeout);
   }, [fetchProjects]);
+
+  useEffect(() => {
+    if (user?.badges?.length > 0) {
+      meritAPI.getBadgeDefinitions().then(({ data }) => setBadgeDefs(data)).catch(() => {});
+    }
+  }, [user?.badges?.length]);
 
   const handleCreated = (project) => {
     setMyProjects((p) => [project, ...p]);
@@ -103,6 +110,28 @@ export default function Dashboard() {
           <StatCard icon={Users} label="Team Members" value={myProjects.reduce((a, p) => a + (p.members?.length || 0), 0)} color="bg-purple-500" />
           <StatCard icon={TrendingUp} label="Active" value={myProjects.filter((p) => p.status === 'active').length} color="bg-emerald-500" />
           <StatCard icon={Zap} label="Completed" value={myProjects.filter((p) => p.status === 'completed').length} color="bg-amber-500" />
+        </div>
+      )}
+
+      {/* Earned Badges */}
+      {user?.badges?.length > 0 && (
+        <div className="glass p-4 rounded-2xl">
+          <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">Your Badges</p>
+          <div className="flex flex-wrap gap-2">
+            {user.badges.map((badge) => {
+              const def = badgeDefs.find((d) => d.id === badge.id);
+              return (
+                <span
+                  key={badge.id}
+                  title={def?.description || badge.id}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm bg-blue-500/10 text-blue-300 border border-blue-500/20"
+                >
+                  <span role="img" aria-hidden>{def?.icon || '🏅'}</span>
+                  <span className="text-xs font-medium">{def?.name || badge.id}</span>
+                </span>
+              );
+            })}
+          </div>
         </div>
       )}
 

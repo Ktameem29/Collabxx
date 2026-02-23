@@ -90,11 +90,13 @@ router.put('/:id', protect, async (req, res) => {
       .populate('createdBy', 'name avatar');
 
     // Trigger merit recalculation when task moves to 'done'
+    let newBadges = [];
     if (status === 'done' && previousStatus !== 'done' && updated.assignedTo) {
-      recalculateMeritForUser(updated.assignedTo._id).catch(() => {});
+      const result = await recalculateMeritForUser(updated.assignedTo._id).catch(() => null);
+      newBadges = result?.newBadges || [];
     }
 
-    res.json(updated);
+    res.json({ ...updated.toObject(), newBadges });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
