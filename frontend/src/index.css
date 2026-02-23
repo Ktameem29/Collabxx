@@ -6,23 +6,26 @@
    :root = dark (default, avoids FOUC on first paint)
    html.light overrides for light mode
    ─────────────────────────────────────────────────────────────────────────── */
+/* Space-separated RGB values so Tailwind opacity modifiers work (bg-navy-700/50 etc.) */
 :root {
-  --navy-950: #07090f;
-  --navy-900: #0B0F1A;
-  --navy-800: #0f1422;
-  --navy-700: #121826;
-  --navy-600: #1a2236;
-  --navy-500: #1F2937;
+  /* Dark theme (default) */
+  --navy-950: 7 9 15;
+  --navy-900: 11 15 26;
+  --navy-800: 15 20 34;
+  --navy-700: 18 24 38;
+  --navy-600: 26 34 54;
+  --navy-500: 31 41 55;
   --text-primary: #E5E7EB;
 }
 
 html.light {
-  --navy-950: #eef2ff;
-  --navy-900: #f8fafc;
-  --navy-800: #f1f5f9;
-  --navy-700: #ffffff;
-  --navy-600: #f8fafc;
-  --navy-500: #e2e8f0;
+  /* Light theme */
+  --navy-950: 238 242 255;
+  --navy-900: 248 250 252;
+  --navy-800: 241 245 249;
+  --navy-700: 255 255 255;
+  --navy-600: 248 250 252;
+  --navy-500: 226 232 240;
   --text-primary: #0f172a;
 }
 
@@ -38,7 +41,7 @@ html.light {
   }
 
   body {
-    background-color: var(--navy-900);
+    background-color: rgb(var(--navy-900));
     color: var(--text-primary);
     font-family: Inter, system-ui, sans-serif;
     min-height: 100vh;
@@ -59,7 +62,7 @@ html.light {
   html.light textarea::placeholder { color: #94a3b8; }
 
   /* Light mode scrollbar */
-  html.light ::-webkit-scrollbar-track { background: var(--navy-800); }
+  html.light ::-webkit-scrollbar-track { background: rgb(var(--navy-800)); }
   html.light ::-webkit-scrollbar-thumb { background: #cbd5e1; }
 
   ::-webkit-scrollbar {
@@ -68,11 +71,11 @@ html.light {
   }
 
   ::-webkit-scrollbar-track {
-    background-color: var(--navy-800);
+    background-color: rgb(var(--navy-800));
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: var(--navy-500);
+    background-color: rgb(var(--navy-500));
     border-radius: 9999px;
   }
 
