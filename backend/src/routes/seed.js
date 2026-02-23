@@ -1,21 +1,20 @@
 /**
- * Seed route — protected by SEED_SECRET header
+ * Seed route — protected by admin JWT
  * POST /api/seed                — seed only if DB is empty
  * POST /api/seed?force=true     — wipe and re-seed
  */
 const router  = require('express').Router();
 const bcrypt  = require('bcryptjs');
+const { protect } = require('../middleware/auth');
 const University          = require('../models/University');
 const User                = require('../models/User');
 const Hackathon           = require('../models/Hackathon');
 const HackathonTeam       = require('../models/HackathonTeam');
 const HackathonSubmission = require('../models/HackathonSubmission');
 
-router.post('/', async (req, res) => {
-  // Secret guard
-  const secret = process.env.SEED_SECRET;
-  if (!secret || req.headers['x-seed-secret'] !== secret) {
-    return res.status(403).json({ message: 'Forbidden' });
+router.post('/', protect, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Admin only' });
   }
 
   const force = req.query.force === 'true';
