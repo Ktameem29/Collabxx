@@ -16,6 +16,7 @@ import Leaderboard from './pages/Leaderboard';
 import Waitlisted from './pages/Waitlisted';
 import AuthCallback from './pages/AuthCallback';
 import JudgeDashboard from './pages/JudgeDashboard';
+import InstitutionsMap from './pages/InstitutionsMap';
 import Layout from './components/layout/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -72,6 +73,7 @@ export default function App() {
               <Route path="/hackathons" element={<Hackathons />} />
               <Route path="/hackathons/:id" element={<HackathonDetail />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/institutions" element={<InstitutionsMap />} />
             </Route>
 
             {/* Judge */}
