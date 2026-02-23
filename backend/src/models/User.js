@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema(
       enum: ['none', 'pending', 'approved', 'rejected'],
       default: 'none',
     },
+    badges: [{ id: String, earnedAt: { type: Date, default: Date.now } }],
   },
   { timestamps: true }
 );
