@@ -17,8 +17,9 @@ COPY . .
 # Pre-create upload dirs so volume mounts don't wipe them
 RUN mkdir -p uploads/avatars uploads/files
 
-# Set CLIENT_URL default (override via Railway env var)
-ENV CLIENT_URL=https://frontend-flame-three-89.vercel.app
+# Set defaults (override via Railway env vars)
+ENV CLIENT_URL=https://sparkly-phoenix-cd1706.netlify.app
+ENV BACKEND_URL=https://backend-production-87c8f.up.railway.app
 
 EXPOSE 5000
 CMD ["node", "src/server.js"]
