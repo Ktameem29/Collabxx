@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Zap, Mail, Lock, User, Eye, EyeOff, ArrowRight, Building2 } from 'lucide-react';
+import { Zap, Mail, Lock, User, Eye, EyeOff, ArrowRight, Building2, Search, X, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { universitiesAPI, authAPI } from '../api';
 import toast from 'react-hot-toast';
@@ -13,12 +13,27 @@ export default function Register() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [universities, setUniversities] = useState([]);
+  const [uniSearch, setUniSearch] = useState('');
+  const [uniOpen, setUniOpen] = useState(false);
+  const uniRef = useRef(null);
 
   useEffect(() => {
     universitiesAPI.getAll()
       .then(({ data }) => setUniversities(data))
       .catch(() => {}); // non-fatal
   }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => { if (uniRef.current && !uniRef.current.contains(e.target)) setUniOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const selectedUni = universities.find((u) => u._id === form.universityId);
+  const filteredUnis = universities.filter((u) =>
+    !uniSearch || u.name.toLowerCase().includes(uniSearch.toLowerCase())
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -143,39 +158,94 @@ export default function Register() {
             </div>
 
             {universities.length > 0 && (
-              <div>
+              <div ref={uniRef}>
                 <label className="block text-sm font-medium text-gray-400 mb-1.5">
                   Institution <span className="text-gray-600 font-normal">(optional)</span>
                 </label>
                 <div className="relative">
-                  <Building2 size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
-                  <select
-                    value={form.universityId}
-                    onChange={(e) => setForm((p) => ({ ...p, universityId: e.target.value }))}
-                    className="input pl-10 appearance-none"
+                  {/* Trigger button */}
+                  <button
+                    type="button"
+                    onClick={() => { setUniOpen((o) => !o); setUniSearch(''); }}
+                    className="input flex items-center justify-between text-left w-full"
                   >
-                    <option value="">Select your institution</option>
-                    {/* Universities & Colleges */}
-                    {universities.filter((u) => u.type !== 'school').length > 0 && (
-                      <optgroup label="🎓 Universities & Colleges">
-                        {universities.filter((u) => u.type !== 'school').map((u) => (
-                          <option key={u._id} value={u._id}>
-                            {u.name} {u.currentStudentCount >= u.maxStudents ? '(Full — waitlist)' : `(${u.maxStudents - u.currentStudentCount} spots)`}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-                    {/* Schools */}
-                    {universities.filter((u) => u.type === 'school').length > 0 && (
-                      <optgroup label="🏫 Schools">
-                        {universities.filter((u) => u.type === 'school').map((u) => (
-                          <option key={u._id} value={u._id}>
-                            {u.name} {u.currentStudentCount >= u.maxStudents ? '(Full — waitlist)' : `(${u.maxStudents - u.currentStudentCount} spots)`}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-                  </select>
+                    <span className={selectedUni ? 'text-gray-200' : 'text-gray-500'}>
+                      {selectedUni ? selectedUni.name : 'Select your institution'}
+                    </span>
+                    <span className="flex items-center gap-1 shrink-0 ml-2">
+                      {selectedUni && (
+                        <span onClick={(e) => { e.stopPropagation(); setForm((p) => ({ ...p, universityId: '' })); setUniSearch(''); }}
+                          className="text-gray-500 hover:text-gray-300 transition-colors p-0.5">
+                          <X size={13} />
+                        </span>
+                      )}
+                      <ChevronDown size={14} className={`text-gray-500 transition-transform ${uniOpen ? 'rotate-180' : ''}`} />
+                    </span>
+                  </button>
+
+                  {/* Dropdown */}
+                  {uniOpen && (
+                    <div className="absolute z-50 w-full mt-1 rounded-xl bg-navy-800 border border-navy-500 shadow-glass overflow-hidden">
+                      {/* Search input */}
+                      <div className="p-2 border-b border-navy-600">
+                        <div className="relative">
+                          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                          <input
+                            autoFocus
+                            type="text"
+                            value={uniSearch}
+                            onChange={(e) => setUniSearch(e.target.value)}
+                            placeholder="Search institutions..."
+                            className="w-full pl-7 pr-3 py-1.5 text-sm bg-navy-700 border border-navy-500 rounded-lg text-gray-200 placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Results */}
+                      <div className="max-h-52 overflow-y-auto">
+                        {filteredUnis.length === 0 ? (
+                          <p className="text-center text-gray-500 text-sm py-4">No institutions found</p>
+                        ) : (
+                          <>
+                            {/* Universities & Colleges */}
+                            {filteredUnis.filter((u) => u.type !== 'school').length > 0 && (
+                              <>
+                                <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 bg-navy-800/80 sticky top-0">🎓 Universities & Colleges</div>
+                                {filteredUnis.filter((u) => u.type !== 'school').map((u) => (
+                                  <button key={u._id} type="button"
+                                    onClick={() => { setForm((p) => ({ ...p, universityId: u._id })); setUniOpen(false); setUniSearch(''); }}
+                                    className={`w-full text-left px-3 py-2 text-sm hover:bg-navy-700 transition-colors flex items-center justify-between gap-2 ${form.universityId === u._id ? 'bg-blue-500/10 text-blue-400' : 'text-gray-300'}`}
+                                  >
+                                    <span>{u.name}</span>
+                                    <span className="text-xs text-gray-500 shrink-0">
+                                      {u.currentStudentCount >= u.maxStudents ? 'Waitlist' : `${u.maxStudents - u.currentStudentCount} spots`}
+                                    </span>
+                                  </button>
+                                ))}
+                              </>
+                            )}
+                            {/* Schools */}
+                            {filteredUnis.filter((u) => u.type === 'school').length > 0 && (
+                              <>
+                                <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 bg-navy-800/80 sticky top-0">🏫 Schools</div>
+                                {filteredUnis.filter((u) => u.type === 'school').map((u) => (
+                                  <button key={u._id} type="button"
+                                    onClick={() => { setForm((p) => ({ ...p, universityId: u._id })); setUniOpen(false); setUniSearch(''); }}
+                                    className={`w-full text-left px-3 py-2 text-sm hover:bg-navy-700 transition-colors flex items-center justify-between gap-2 ${form.universityId === u._id ? 'bg-blue-500/10 text-blue-400' : 'text-gray-300'}`}
+                                  >
+                                    <span>{u.name}</span>
+                                    <span className="text-xs text-gray-500 shrink-0">
+                                      {u.currentStudentCount >= u.maxStudents ? 'Waitlist' : `${u.maxStudents - u.currentStudentCount} spots`}
+                                    </span>
+                                  </button>
+                                ))}
+                              </>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
