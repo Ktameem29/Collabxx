@@ -23,7 +23,8 @@ const allowedOrigin = (origin, callback) => {
     origin === CLIENT_URL ||
     origin === 'http://localhost:5173' ||
     origin === 'http://localhost:3000' ||
-    /\.vercel\.app$/.test(origin)
+    /\.vercel\.app$/.test(origin) ||
+    /\.netlify\.app$/.test(origin)
   ) {
     return callback(null, true);
   }
