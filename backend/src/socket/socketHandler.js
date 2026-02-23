@@ -12,7 +12,7 @@ const socketHandler = (io) => {
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await User.findById(decoded.id).select('-password');
+      const user = await User.findById(decoded.id);
       if (!user || !user.isActive) return next(new Error('User not found'));
       socket.user = user;
       next();
@@ -28,17 +28,28 @@ const socketHandler = (io) => {
     // Broadcast online status
     socket.broadcast.emit('user:online', { userId });
 
-    // Join a project room
+    // ─── Project rooms ───────────────────────────────────────────────────────
+
     socket.on('project:join', (projectId) => {
       socket.join(`project:${projectId}`);
     });
 
-    // Leave a project room
     socket.on('project:leave', (projectId) => {
       socket.leave(`project:${projectId}`);
     });
 
-    // Send chat message
+    // ─── Hackathon rooms ─────────────────────────────────────────────────────
+
+    socket.on('hackathon:join', (hackathonId) => {
+      socket.join(`hackathon:${hackathonId}`);
+    });
+
+    socket.on('hackathon:leave', (hackathonId) => {
+      socket.leave(`hackathon:${hackathonId}`);
+    });
+
+    // ─── Chat ────────────────────────────────────────────────────────────────
+
     socket.on('message:send', async ({ projectId, content, type = 'text', fileUrl = null, fileName = null }) => {
       try {
         const message = await Message.create({
@@ -59,7 +70,8 @@ const socketHandler = (io) => {
       }
     });
 
-    // Typing indicator
+    // ─── Typing ──────────────────────────────────────────────────────────────
+
     socket.on('typing:start', ({ projectId }) => {
       socket.to(`project:${projectId}`).emit('typing:start', {
         userId,
@@ -72,12 +84,14 @@ const socketHandler = (io) => {
       socket.to(`project:${projectId}`).emit('typing:stop', { userId });
     });
 
-    // Get online users
+    // ─── Online users ─────────────────────────────────────────────────────────
+
     socket.on('users:online', () => {
       socket.emit('users:online', Array.from(onlineUsers.keys()));
     });
 
-    // Disconnect
+    // ─── Disconnect ──────────────────────────────────────────────────────────
+
     socket.on('disconnect', () => {
       onlineUsers.delete(userId);
       socket.broadcast.emit('user:offline', { userId });

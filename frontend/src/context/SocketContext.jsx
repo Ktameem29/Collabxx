@@ -49,6 +49,9 @@ export const SocketProvider = ({ children }) => {
   const joinProject = (projectId) => socketRef.current?.emit('project:join', projectId);
   const leaveProject = (projectId) => socketRef.current?.emit('project:leave', projectId);
 
+  const joinHackathon = (hackathonId) => socketRef.current?.emit('hackathon:join', hackathonId);
+  const leaveHackathon = (hackathonId) => socketRef.current?.emit('hackathon:leave', hackathonId);
+
   const sendMessage = (projectId, content, type = 'text', fileUrl = null, fileName = null) => {
     socketRef.current?.emit('message:send', { projectId, content, type, fileUrl, fileName });
   };
@@ -66,6 +69,8 @@ export const SocketProvider = ({ children }) => {
       onlineUsers,
       joinProject,
       leaveProject,
+      joinHackathon,
+      leaveHackathon,
       sendMessage,
       startTyping,
       stopTyping,

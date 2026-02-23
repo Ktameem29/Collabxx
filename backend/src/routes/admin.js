@@ -6,9 +6,12 @@ const Task = require('../models/Task');
 const Message = require('../models/Message');
 const File = require('../models/File');
 const { protect } = require('../middleware/auth');
-const { isAdmin } = require('../middleware/admin');
+const { isAdmin } = require('../middleware/roles');
+const { recalculateMeritForUser } = require('../services/meritService');
 
 router.use(protect, isAdmin);
+
+const VALID_ROLES = ['student', 'mentor', 'judge', 'admin'];
 
 // GET /api/admin/stats
 router.get('/stats', async (req, res) => {
@@ -23,7 +26,7 @@ router.get('/stats', async (req, res) => {
 
     const activeProjects = await Project.countDocuments({ status: 'active' });
     const adminCount = await User.countDocuments({ role: 'admin' });
-    const recentUsers = await User.find().sort('-createdAt').limit(5).select('name email avatar createdAt');
+    const recentUsers = await User.find().sort('-createdAt').limit(5).select('name email avatar createdAt role');
     const recentProjects = await Project.find().sort('-createdAt').limit(5).populate('owner', 'name avatar');
 
     res.json({
@@ -50,10 +53,10 @@ router.get('/users', async (req, res) => {
 
     const total = await User.countDocuments(query);
     const users = await User.find(query)
-      .select('-password')
       .sort('-createdAt')
       .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .populate('university', 'name');
 
     res.json({ users, total, pages: Math.ceil(total / limit) });
   } catch (err) {
@@ -67,9 +70,10 @@ router.put('/users/:id', async (req, res) => {
     const { isActive, role } = req.body;
     const updates = {};
     if (isActive !== undefined) updates.isActive = isActive;
-    if (role && ['user', 'admin'].includes(role)) updates.role = role;
+    if (role && VALID_ROLES.includes(role)) updates.role = role;
 
-    const user = await User.findByIdAndUpdate(req.params.id, updates, { new: true }).select('-password');
+    const user = await User.findByIdAndUpdate(req.params.id, updates, { new: true })
+      .populate('university', 'name');
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);
   } catch (err) {
@@ -124,6 +128,17 @@ router.delete('/projects/:id', async (req, res) => {
     await project.deleteOne();
 
     res.json({ message: 'Project deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// POST /api/admin/merit/recalculate/:userId
+router.post('/merit/recalculate/:userId', async (req, res) => {
+  try {
+    const result = await recalculateMeritForUser(req.params.userId);
+    if (!result) return res.status(404).json({ message: 'User not found' });
+    res.json({ message: 'Merit recalculated', ...result });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -10,6 +10,12 @@ import ProjectDetail from './pages/ProjectDetail';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import NotFound from './pages/NotFound';
+import Hackathons from './pages/Hackathons';
+import HackathonDetail from './pages/HackathonDetail';
+import Leaderboard from './pages/Leaderboard';
+import Waitlisted from './pages/Waitlisted';
+import AuthCallback from './pages/AuthCallback';
+import JudgeDashboard from './pages/JudgeDashboard';
 import Layout from './components/layout/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -31,6 +37,14 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
+const JudgeRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'judge' && user.role !== 'admin') return <Navigate to="/dashboard" replace />;
+  return children;
+};
+
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
@@ -47,12 +61,29 @@ export default function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+            <Route path="/waitlisted" element={<Waitlisted />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
 
             {/* Protected */}
             <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/projects/:id" element={<ProjectDetail />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/hackathons" element={<Hackathons />} />
+              <Route path="/hackathons/:id" element={<HackathonDetail />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
+            </Route>
+
+            {/* Judge */}
+            <Route
+              path="/judge"
+              element={
+                <JudgeRoute>
+                  <Layout />
+                </JudgeRoute>
+              }
+            >
+              <Route index element={<JudgeDashboard />} />
             </Route>
 
             {/* Admin */}
