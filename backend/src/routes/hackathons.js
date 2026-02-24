@@ -247,7 +247,7 @@ router.post('/:id/teams', protect, async (req, res) => {
         .map((u) => u.toString())
         .includes(req.user.university.toString())
     ) {
-      return res.status(403).json({ message: 'Your university is not eligible for this hackathon' });
+      return res.status(403).json({ message: 'Your institution is not eligible for this hackathon' });
     }
 
     const { name } = req.body;
