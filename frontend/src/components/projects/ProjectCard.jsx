@@ -21,6 +21,7 @@ export default function ProjectCard({ project, index = 0 }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: index * 0.05 }}
       whileHover={{ y: -3 }}
+      whileTap={{ scale: 0.98 }}
       onClick={() => navigate(`/projects/${project._id}`)}
       className="glass-hover rounded-2xl p-5 cursor-pointer group"
     >

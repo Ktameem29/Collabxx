@@ -18,9 +18,8 @@ function HackathonCard({ hackathon }) {
 
   return (
     <Link to={`/hackathons/${hackathon._id}`}>
-      <motion.div
-        whileHover={{ y: -2 }}
-        className="card overflow-hidden border border-navy-500 hover:border-purple-500/40 transition-all duration-200 cursor-pointer"
+      <div
+        className="card overflow-hidden border border-navy-500 hover:border-purple-500/40 transition-all duration-200 cursor-pointer h-full"
         style={{ borderTop: `3px solid ${hackathon.coverColor || '#8B5CF6'}` }}
       >
         <div className="flex items-start justify-between gap-3 mb-3">
@@ -61,7 +60,7 @@ function HackathonCard({ hackathon }) {
             </span>
           )}
         </div>
-      </motion.div>
+      </div>
     </Link>
   );
 }
@@ -146,18 +145,23 @@ export default function Hackathons() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {hackathons.map((h, i) => (
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+          variants={{ show: { transition: { staggerChildren: 0.07 } } }}
+          initial="hidden"
+          animate="show"
+        >
+          {hackathons.map((h) => (
             <motion.div
               key={h._id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
+              variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.35 } } }}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              whileTap={{ scale: 0.98 }}
             >
               <HackathonCard hackathon={h} />
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
 
       {showCreate && (

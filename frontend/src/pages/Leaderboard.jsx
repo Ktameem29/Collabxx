@@ -118,10 +118,11 @@ export default function Leaderboard() {
             <motion.div
               key={u._id}
               layout
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: idx * 0.015 }}
-              className="flex items-center gap-4 py-3 first:pt-0 last:pb-0 hover:bg-navy-600/20 -mx-6 px-6 transition-colors"
+              initial={{ opacity: 0, x: -24 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: Math.min(idx * 0.04, 0.4), duration: 0.3, ease: 'easeOut' }}
+              whileHover={{ x: 4, backgroundColor: 'rgba(99,102,241,0.04)' }}
+              className="flex items-center gap-4 py-3 first:pt-0 last:pb-0 -mx-6 px-6 transition-colors rounded-xl"
             >
               <div className="w-8 text-center shrink-0">
                 {idx < 3

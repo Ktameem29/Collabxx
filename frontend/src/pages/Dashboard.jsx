@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { Plus, Search, FolderOpen, TrendingUp, Users, Zap } from 'lucide-react';
 import { projectsAPI, meritAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
@@ -9,18 +9,40 @@ import { SkeletonCard, SkeletonStat } from '../components/ui/Skeleton';
 import toast from 'react-hot-toast';
 
 const stagger = { show: { transition: { staggerChildren: 0.07 } } };
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+};
 
-const StatCard = ({ icon: Icon, label, value, color }) => (
+function CountUp({ value }) {
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, (v) => Math.round(v));
+  const [display, setDisplay] = useState(0);
+  useEffect(() => {
+    const controls = animate(count, value, { duration: 0.8, ease: 'easeOut' });
+    const unsub = rounded.on('change', setDisplay);
+    return () => { controls.stop(); unsub(); };
+  }, [value]);
+  return <>{display}</>;
+}
+
+const StatCard = ({ icon: Icon, label, value, color, delay = 0 }) => (
   <motion.div
-    initial={{ opacity: 0, y: 16 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="glass p-5 rounded-2xl flex items-center gap-4"
+    variants={cardVariants}
+    whileHover={{ y: -3, transition: { duration: 0.2 } }}
+    whileTap={{ scale: 0.97 }}
+    className="glass p-5 rounded-2xl flex items-center gap-4 cursor-default"
   >
-    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+    <motion.div
+      initial={{ scale: 0.5, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ delay: delay + 0.2, type: 'spring', stiffness: 260, damping: 20 }}
+      className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${color}`}
+    >
       <Icon size={22} className="text-white" />
-    </div>
+    </motion.div>
     <div>
-      <p className="text-2xl font-bold text-gray-100">{value}</p>
+      <p className="text-2xl font-bold text-gray-100"><CountUp value={value} /></p>
       <p className="text-xs text-gray-500">{label}</p>
     </div>
   </motion.div>
@@ -93,10 +115,15 @@ export default function Dashboard() {
           </h1>
           <p className="text-sm text-gray-500 mt-1">Together we build. Let's see what you're working on.</p>
         </div>
-        <button onClick={() => setCreateOpen(true)} className="btn-primary shrink-0">
+        <motion.button
+          onClick={() => setCreateOpen(true)}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.96 }}
+          className="btn-primary shrink-0"
+        >
           <Plus size={18} />
           New Project
-        </button>
+        </motion.button>
       </div>
 
       {/* Stats */}
@@ -105,12 +132,17 @@ export default function Dashboard() {
           {[...Array(4)].map((_, i) => <SkeletonStat key={i} />)}
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard icon={FolderOpen} label="My Projects" value={myProjects.length} color="bg-blue-500" />
-          <StatCard icon={Users} label="Team Members" value={myProjects.reduce((a, p) => a + (p.members?.length || 0), 0)} color="bg-purple-500" />
-          <StatCard icon={TrendingUp} label="Active" value={myProjects.filter((p) => p.status === 'active').length} color="bg-emerald-500" />
-          <StatCard icon={Zap} label="Completed" value={myProjects.filter((p) => p.status === 'completed').length} color="bg-amber-500" />
-        </div>
+        <motion.div
+          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+        >
+          <StatCard icon={FolderOpen} label="My Projects" value={myProjects.length} color="bg-blue-500" delay={0} />
+          <StatCard icon={Users} label="Team Members" value={myProjects.reduce((a, p) => a + (p.members?.length || 0), 0)} color="bg-purple-500" delay={0.08} />
+          <StatCard icon={TrendingUp} label="Active" value={myProjects.filter((p) => p.status === 'active').length} color="bg-emerald-500" delay={0.16} />
+          <StatCard icon={Zap} label="Completed" value={myProjects.filter((p) => p.status === 'completed').length} color="bg-amber-500" delay={0.24} />
+        </motion.div>
       )}
 
       {/* Earned Badges */}
