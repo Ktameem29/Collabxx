@@ -145,7 +145,7 @@ export default function HackathonDetail() {
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <Badge variant={STATUS_VARIANT[hackathon.status]}>{hackathon.status}</Badge>
               {hackathon.participatingUniversities?.length > 0 && (
-                <Badge variant="gray">{hackathon.participatingUniversities.length} unis</Badge>
+                <Badge variant="gray">{hackathon.participatingUniversities.length} institutions</Badge>
               )}
             </div>
             <h1 className="text-2xl font-bold text-gray-100 mb-1">{hackathon.title}</h1>
@@ -272,7 +272,7 @@ export default function HackathonDetail() {
 
           {hackathon.participatingUniversities?.length > 0 && (
             <div className="card lg:col-span-2">
-              <h3 className="font-semibold text-gray-200 mb-3">Participating Universities</h3>
+              <h3 className="font-semibold text-gray-200 mb-3">Participating Institutions</h3>
               <div className="flex flex-wrap gap-2">
                 {hackathon.participatingUniversities.map((u) => (
                   <span key={u._id} className="text-sm px-3 py-1.5 rounded-xl bg-navy-700 border border-navy-500 text-gray-300">
