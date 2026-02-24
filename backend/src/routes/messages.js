@@ -33,4 +33,31 @@ router.get('/project/:projectId', protect, async (req, res) => {
   }
 });
 
+// PUT /api/messages/:id/vote — vote on a poll option
+router.put('/:id/vote', protect, async (req, res) => {
+  try {
+    const { optionIndex } = req.body;
+    const message = await Message.findById(req.params.id);
+    if (!message || message.type !== 'poll') return res.status(404).json({ message: 'Poll not found' });
+
+    const project = await Project.findById(message.project);
+    if (!isMember(project, req.user._id)) return res.status(403).json({ message: 'Access denied' });
+
+    const userId = req.user._id;
+    // Remove existing vote from any option
+    message.pollOptions.forEach((opt) => {
+      opt.votes = opt.votes.filter((v) => v.toString() !== userId.toString());
+    });
+    // Add vote to selected option (toggle off if already voted)
+    const opt = message.pollOptions[optionIndex];
+    if (opt) opt.votes.push(userId);
+
+    await message.save();
+    await message.populate('sender', 'name avatar');
+    res.json(message);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

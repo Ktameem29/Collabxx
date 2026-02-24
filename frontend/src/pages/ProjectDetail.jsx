@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Users, KanbanSquare, MessageSquare, Upload,
   Settings, UserPlus, LogOut, Crown, Tag, Globe, Lock,
-  Trash2, MoreVertical,
+  Trash2, MoreVertical, Calendar, Video,
 } from 'lucide-react';
 import { projectsAPI, tasksAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +14,7 @@ import ChatWindow from '../components/chat/ChatWindow';
 import FileUpload from '../components/files/FileUpload';
 import FileList from '../components/files/FileList';
 import JoinRequests from '../components/projects/JoinRequests';
+import ProjectCalendar from '../components/projects/ProjectCalendar';
 import Avatar from '../components/ui/Avatar';
 import Badge from '../components/ui/Badge';
 import toast from 'react-hot-toast';
@@ -21,6 +22,7 @@ import toast from 'react-hot-toast';
 const TABS = [
   { id: 'overview', label: 'Overview', icon: Users },
   { id: 'kanban', label: 'Kanban', icon: KanbanSquare },
+  { id: 'calendar', label: 'Calendar', icon: Calendar },
   { id: 'chat', label: 'Chat', icon: MessageSquare },
   { id: 'files', label: 'Files', icon: Upload },
 ];
@@ -54,7 +56,6 @@ export default function ProjectDetail() {
   const isMember = project?.members?.some((m) => m.user?._id === user?._id);
   const isOwner = project?.owner?._id === user?._id;
   const isPending = project?.pendingRequests?.some((r) => (r._id || r) === user?._id);
-  const myRole = project?.members?.find((m) => m.user?._id === user?._id)?.role;
 
   const handleJoin = async () => {
     setJoining(true);
@@ -102,7 +103,11 @@ export default function ProjectDetail() {
     }
   };
 
-  // Fetch task stats for overview tab
+  const handleVideoCall = () => {
+    const roomName = `collabxx-${id}`;
+    window.open(`https://meet.jit.si/${roomName}`, '_blank', 'noopener,noreferrer');
+  };
+
   useEffect(() => {
     if (!project?._id || (!isMember && !isOwner)) return;
     tasksAPI.getByProject(project._id).then(({ data }) => {
@@ -116,7 +121,6 @@ export default function ProjectDetail() {
   }, [project?._id, isMember, isOwner]); // eslint-disable-line
 
   if (loading) return <SkeletonProjectDetail />;
-
   if (!project) return null;
 
   return (
@@ -152,7 +156,13 @@ export default function ProjectDetail() {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          {(isMember || isOwner) && (
+            <button onClick={handleVideoCall} className="btn-secondary flex items-center gap-2 text-sm">
+              <Video size={15} className="text-emerald-400" />
+              <span className="hidden sm:inline">Video Call</span>
+            </button>
+          )}
           {!isMember && !isOwner && !isPending && (
             <button onClick={handleJoin} disabled={joining} className="btn-primary">
               <UserPlus size={16} /> Request to Join
@@ -180,12 +190,12 @@ export default function ProjectDetail() {
       {/* Tabs */}
       {(isMember || isOwner) && (
         <>
-          <div className="flex gap-1 p-1 rounded-xl bg-navy-700 border border-navy-500 w-fit">
+          <div className="flex gap-1 p-1 rounded-xl bg-navy-700 border border-navy-500 w-fit overflow-x-auto">
             {TABS.map(({ id: tid, label, icon: Icon }) => (
               <button
                 key={tid}
                 onClick={() => setTab(tid)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                   tab === tid ? 'bg-blue-500 text-white shadow-glow' : 'text-gray-400 hover:text-gray-200'
                 }`}
               >
@@ -212,7 +222,6 @@ export default function ProjectDetail() {
                       <p className="text-sm text-gray-400 leading-relaxed">{project.description}</p>
                     </div>
 
-                    {/* Task progress */}
                     {taskStats && (
                       <div className="card">
                         <h3 className="font-semibold text-gray-200 mb-4">Task Progress</h3>
@@ -243,11 +252,10 @@ export default function ProjectDetail() {
                     )}
                   </div>
 
-                  {/* Members panel */}
                   <div className="card space-y-4">
                     <h3 className="font-semibold text-gray-200">Team ({project.members?.length})</h3>
                     <div className="space-y-2.5">
-                      {project.members?.map(({ user: member, role, joinedAt }) => (
+                      {project.members?.map(({ user: member, role }) => (
                         member && (
                           <div key={member._id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-navy-600 transition-colors group">
                             <Avatar user={member} size="sm" />
@@ -259,10 +267,8 @@ export default function ProjectDetail() {
                               <p className="text-xs text-gray-500 truncate">{member.email}</p>
                             </div>
                             {isOwner && member._id !== user._id && (
-                              <button
-                                onClick={() => handleRemoveMember(member._id)}
-                                className="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all"
-                              >
+                              <button onClick={() => handleRemoveMember(member._id)}
+                                className="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all">
                                 <MoreVertical size={14} />
                               </button>
                             )}
@@ -270,8 +276,6 @@ export default function ProjectDetail() {
                         )
                       ))}
                     </div>
-
-                    {/* Skills */}
                     {project.members?.some((m) => m.user?.skills?.length > 0) && (
                       <div className="pt-3 border-t border-navy-500">
                         <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">Team Skills</p>
@@ -286,21 +290,15 @@ export default function ProjectDetail() {
                 </div>
               )}
 
-              {/* Kanban */}
               {tab === 'kanban' && <KanbanBoard project={project} />}
-
-              {/* Chat */}
+              {tab === 'calendar' && <ProjectCalendar project={project} />}
               {tab === 'chat' && <ChatWindow project={project} />}
 
-              {/* Files */}
               {tab === 'files' && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="card">
                     <h3 className="font-semibold text-gray-200 mb-4">Upload Files</h3>
-                    <FileUpload
-                      project={project}
-                      onUploaded={() => setFileRefresh((n) => n + 1)}
-                    />
+                    <FileUpload project={project} onUploaded={() => setFileRefresh((n) => n + 1)} />
                   </div>
                   <div className="card">
                     <h3 className="font-semibold text-gray-200 mb-4">Project Files</h3>
@@ -313,7 +311,6 @@ export default function ProjectDetail() {
         </>
       )}
 
-      {/* Non-member view */}
       {!isMember && !isOwner && (
         <div className="card text-center py-12">
           <Lock size={32} className="mx-auto text-gray-600 mb-4" />

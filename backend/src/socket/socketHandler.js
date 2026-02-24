@@ -51,24 +51,36 @@ const socketHandler = (io) => {
 
     // ─── Chat ────────────────────────────────────────────────────────────────
 
-    socket.on('message:send', async ({ projectId, content, type = 'text', fileUrl = null, fileName = null }) => {
+    socket.on('message:send', async ({ projectId, content, type = 'text', fileUrl = null, fileName = null, pollQuestion = null, pollOptions = null }) => {
       try {
-        const message = await Message.create({
-          project: projectId,
-          sender: socket.user._id,
-          content,
-          type,
-          fileUrl,
-          fileName,
-        });
-
+        const msgData = { project: projectId, sender: socket.user._id, content, type, fileUrl, fileName };
+        if (type === 'poll' && pollQuestion && pollOptions) {
+          msgData.pollQuestion = pollQuestion;
+          msgData.pollOptions = pollOptions.map((text) => ({ text, votes: [] }));
+        }
+        const message = await Message.create(msgData);
         await message.populate('sender', 'name avatar');
-
-        // Emit to all in project room (including sender)
         io.to(`project:${projectId}`).emit('message:new', message);
       } catch (err) {
         socket.emit('error', { message: 'Failed to send message' });
       }
+    });
+
+    // ─── Polls ───────────────────────────────────────────────────────────────
+
+    socket.on('poll:vote', async ({ messageId, optionIndex, projectId }) => {
+      try {
+        const message = await Message.findById(messageId);
+        if (!message || message.type !== 'poll') return;
+        const uid = socket.user._id.toString();
+        message.pollOptions.forEach((opt) => {
+          opt.votes = opt.votes.filter((v) => v.toString() !== uid);
+        });
+        if (message.pollOptions[optionIndex]) message.pollOptions[optionIndex].votes.push(socket.user._id);
+        await message.save();
+        await message.populate('sender', 'name avatar');
+        io.to(`project:${projectId}`).emit('poll:updated', message);
+      } catch { /* ignore */ }
     });
 
     // ─── Typing ──────────────────────────────────────────────────────────────
