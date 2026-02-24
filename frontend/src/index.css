@@ -2,13 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── CSS Theme Variables ─────────────────────────────────────────────────────
-   :root = dark (default, avoids FOUC on first paint)
-   html.light overrides for light mode
+/* ── CSS Theme Variables ──────────────────────────────────────────────────────
+   Space-separated RGB values so Tailwind opacity modifiers work (bg-navy-700/50)
+   :root = dark (default), html.light = light override
    ─────────────────────────────────────────────────────────────────────────── */
-/* Space-separated RGB values so Tailwind opacity modifiers work (bg-navy-700/50 etc.) */
 :root {
-  /* Dark theme (default) */
   --navy-950: 7 9 15;
   --navy-900: 11 15 26;
   --navy-800: 15 20 34;
@@ -19,7 +17,6 @@
 }
 
 html.light {
-  /* Light theme */
   --navy-950: 238 242 255;
   --navy-900: 248 250 252;
   --navy-800: 241 245 249;
@@ -49,27 +46,13 @@ html.light {
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Light mode scrollbar */
   html.light ::-webkit-scrollbar-track { background: rgb(var(--navy-800)); }
   html.light ::-webkit-scrollbar-thumb { background: #cbd5e1; }
 
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background-color: rgb(var(--navy-800));
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: rgb(var(--navy-500));
-    border-radius: 9999px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-blue-500;
-  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background-color: rgb(var(--navy-800)); }
+  ::-webkit-scrollbar-thumb { background-color: rgb(var(--navy-500)); border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-blue-500; }
 }
 
 @layer components {
@@ -83,8 +66,9 @@ html.light {
   }
 
   html.light .glass {
-    background: rgba(255, 255, 255, 0.85);
-    border-color: rgba(226, 232, 240, 0.8);
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(203, 213, 225, 0.8);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
   }
 
   .glass-hover {
@@ -99,7 +83,8 @@ html.light {
   }
 
   html.light .glass-hover:hover {
-    background: rgba(248, 250, 252, 0.95);
+    background: rgba(248, 250, 252, 0.98);
+    border-color: rgba(59, 130, 246, 0.3);
   }
 
   /* Gradient text */
@@ -111,10 +96,7 @@ html.light {
   }
 
   /* Gradient border */
-  .gradient-border {
-    position: relative;
-  }
-
+  .gradient-border { position: relative; }
   .gradient-border::before {
     content: '';
     position: absolute;
@@ -128,7 +110,7 @@ html.light {
     pointer-events: none;
   }
 
-  /* Primary button */
+  /* Buttons */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
            bg-blue-500 hover:bg-blue-600 text-white font-medium text-sm
@@ -145,12 +127,17 @@ html.light {
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
+  html.light .btn-secondary { color: #1e293b; }
+
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
            text-gray-400 hover:text-gray-200 hover:bg-navy-700 font-medium text-sm
            transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-navy-900;
   }
+
+  html.light .btn-ghost { color: #475569; }
+  html.light .btn-ghost:hover { color: #0f172a; }
 
   .btn-danger {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
@@ -168,12 +155,21 @@ html.light {
 
   html.light .input {
     color: #0f172a;
-    border-color: #e2e8f0;
+    border-color: #cbd5e1;
+    background-color: #ffffff;
   }
+
+  html.light .input::placeholder { color: #94a3b8; }
 
   /* Card */
   .card {
     @apply bg-navy-700 border border-navy-500 rounded-2xl p-6;
+  }
+
+  html.light .card {
+    background-color: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
   }
 
   /* Badge */
@@ -187,9 +183,8 @@ html.light {
            hover:bg-navy-600 transition-all duration-200 text-sm font-medium cursor-pointer;
   }
 
-  html.light .sidebar-link:hover {
-    color: #0f172a;
-  }
+  html.light .sidebar-link { color: #475569; }
+  html.light .sidebar-link:hover { color: #0f172a; }
 
   .sidebar-link.active {
     @apply bg-blue-500/10 text-blue-400 border border-blue-500/20;
@@ -200,33 +195,22 @@ html.light {
     @apply flex flex-col gap-3 min-h-[200px] p-3 rounded-2xl bg-navy-800 border border-navy-500;
   }
 
+  html.light .kanban-col {
+    background-color: #f1f5f9;
+    border-color: #e2e8f0;
+  }
+
   /* Priority badges */
-  .priority-low {
-    @apply badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20;
-  }
-
-  .priority-medium {
-    @apply badge bg-amber-500/10 text-amber-400 border border-amber-500/20;
-  }
-
-  .priority-high {
-    @apply badge bg-red-500/10 text-red-400 border border-red-500/20;
-  }
+  .priority-low    { @apply badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20; }
+  .priority-medium { @apply badge bg-amber-500/10  text-amber-400  border border-amber-500/20;  }
+  .priority-high   { @apply badge bg-red-500/10    text-red-400    border border-red-500/20;    }
 
   /* Status badges */
-  .status-active {
-    @apply badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20;
-  }
+  .status-active    { @apply badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20; }
+  .status-completed { @apply badge bg-blue-500/10   text-blue-400   border border-blue-500/20;   }
+  .status-archived  { @apply badge bg-gray-500/10   text-gray-400   border border-gray-500/20;   }
 
-  .status-completed {
-    @apply badge bg-blue-500/10 text-blue-400 border border-blue-500/20;
-  }
-
-  .status-archived {
-    @apply badge bg-gray-500/10 text-gray-400 border border-gray-500/20;
-  }
-
-  /* Select in light mode */
+  /* Select options */
   html.light select option {
     background-color: #ffffff;
     color: #0f172a;
@@ -234,34 +218,22 @@ html.light {
 }
 
 @layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  .text-balance {
-    text-wrap: balance;
-  }
+  .text-balance { text-wrap: balance; }
 
-  /* Glow effects */
-  .glow-blue {
-    box-shadow: 0 0 24px rgba(59, 130, 246, 0.3);
-  }
-
-  .glow-purple {
-    box-shadow: 0 0 24px rgba(139, 92, 246, 0.3);
-  }
+  .glow-blue   { box-shadow: 0 0 24px rgba(59, 130, 246, 0.3); }
+  .glow-purple { box-shadow: 0 0 24px rgba(139, 92, 246, 0.3); }
 }
 
-/* ── Light mode text overrides (outside @layer so they beat Tailwind utilities) ── */
+/* ── Light mode: override Tailwind text utilities (must be outside @layer) ── */
 html.light .text-gray-100,
 html.light .text-gray-200 { color: #0f172a !important; }
-html.light .text-gray-300 { color: #334155 !important; }
-html.light .text-gray-400 { color: #475569 !important; }
-html.light .text-gray-500 { color: #64748b !important; }
-html.light .text-gray-600 { color: #94a3b8 !important; }
+html.light .text-gray-300  { color: #334155 !important; }
+html.light .text-gray-400  { color: #475569 !important; }
+html.light .text-gray-500  { color: #64748b !important; }
+html.light .text-gray-600  { color: #94a3b8 !important; }
+
 html.light input::placeholder,
 html.light textarea::placeholder { color: #94a3b8; }
